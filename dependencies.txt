@@ -1,0 +1,3 @@
+https://github.com/ahyatt/emacs-websocket
+https://github.com/ginqi7/websocket-bridge
+https://github.com/ginqi7/fuzzy-search.el
