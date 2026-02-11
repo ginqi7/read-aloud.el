@@ -30,6 +30,7 @@
   (concat (file-name-directory (or load-file-name (buffer-file-name))) "read-alound.py")
   "Stores the path to the read-alound.py file by concatenating the directory of the current file with \"read-alound.py\".")
 
+;; Custom variables
 (defcustom read-alound-python (executable-find "python3")
   "The Python interpreter."
   :type 'string)
@@ -37,6 +38,16 @@
 (defcustom read-alound-notify-command nil
   "Specifies the command for read-alound notifications, stored as a string."
   :type 'string)
+
+(defcustom read-alound-transcription-backend "parakeet-mlx"
+  "Name of the transcription backend model used by read-alound. The value should be a string identifying the backend to use (for example, \"parakeet-mlx\", \"deepgram\")."
+  :type 'string)
+
+(defcustom read-alound-deepgram-api-key ""
+  "Deepgram API key used for authentication when read-alound sends audio for transcription. The value should be a string token provided by your Deepgram account."
+  :type 'string)
+
+;; Commands
 
 (defun read-alound-start ()
   "Start read-alound."
