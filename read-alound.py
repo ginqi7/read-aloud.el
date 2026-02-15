@@ -11,10 +11,7 @@ import websocket_bridge_python
 import queue
 import sys
 import time
-import mlx.core as mx
 import sounddevice as sd
-from parakeet_mlx import from_pretrained
-from deepgram import DeepgramClient
 
 
 MODEL_NAME = "mlx-community/parakeet-tdt-0.6b-v3"
@@ -36,6 +33,9 @@ last_text = ""
 
 
 def init_parakeet_mlx():
+    import mlx.core as mx
+    from parakeet_mlx import from_pretrained
+
     global transcriber, sample_rate
     model = from_pretrained(MODEL_NAME)
     sample_rate = model.preprocessor_config.sample_rate
@@ -43,6 +43,8 @@ def init_parakeet_mlx():
 
 
 def init_deepgram():
+    from deepgram import DeepgramClient
+
     global transcriber, sample_rate
     transcriber = DeepgramClient(api_key=deepgram_api_key)
     sample_rate = 16000
