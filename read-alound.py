@@ -21,6 +21,7 @@ SILENCE_THRESH = 1e-7  # 音量阈值
 
 transcription_backend = ""
 deepgram_api_key = ""
+vosk_model_directory = ""
 
 transcriber = None
 sample_rate = 0
@@ -42,6 +43,15 @@ def init_parakeet_mlx():
     transcriber = model.transcribe_stream(context_size=(256, 256))
 
 
+def init_vosk():
+    from vosk import Model, KaldiRecognizer
+
+    global transcriber, sample_rate
+    model = Model(vosk_model_directory)
+    sample_rate = 16000
+    transcriber = KaldiRecognizer(model, sample_rate)
+
+
 def init_deepgram():
     from deepgram import DeepgramClient
 
@@ -55,13 +65,19 @@ def init_transcriber():
         init_deepgram()
     elif transcription_backend == "parakeet-mlx":
         init_parakeet_mlx()
+    elif transcription_backend == "vosk":
+        init_vosk()
 
 
 def send_audio(audio_chunk):
     global last_text
     if transcription_backend == "deepgram":
         deepgram_audio_queue.put(audio_chunk)
-
+    elif transcription_backend == "vosk":
+        audio_data = np.concatenate(audio_chunk)
+        audio_int16 = (audio_data * 32767).astype(np.int16)
+        transcriber.AcceptWaveform(audio_int16.tobytes())
+        print(transcriber.PartialResult())
     elif transcription_backend == "parakeet-mlx":
         audio_mlx = mx.array(audio_chunk.flatten())
         transcriber.add_audio(audio_mlx)
@@ -72,6 +88,7 @@ def send_audio(audio_chunk):
 
 
 async def handle_transcription():
+    await eval_in_emacs("message", ["transcript..."])
     if transcription_backend == "deepgram":
         chunks = []
         while not deepgram_audio_queue.empty():
@@ -108,6 +125,17 @@ async def handle_transcription():
                 print()
         if result.text.strip():
             print(result.text)
+    elif transcription_backend == "vosk":
+        result = json.loads(transcriber.Result())
+        text = result.get("text", "").strip()
+        if text:
+            await eval_in_emacs("message", [text])
+            await eval_in_emacs("fuzzy-search", [text])
+        else:
+            partial = json.loads(transcriber.PartialResult()).get("partial", "").strip()
+            if partial:
+                await eval_in_emacs("message", [partial])
+                await eval_in_emacs("fuzzy-search", [partial])
 
 
 async def toggle_recording():
@@ -189,9 +217,10 @@ async def get_emacs_var(var_name: str):
 
 
 async def init():
-    global transcription_backend, sample_rate, deepgram_api_key
+    global transcription_backend, sample_rate, deepgram_api_key, vosk_model_directory
     transcription_backend = await get_emacs_var("read-alound-transcription-backend")
     deepgram_api_key = await get_emacs_var("read-alound-deepgram-api-key")
+    vosk_model_directory = await get_emacs_var("read-alound-vosk-model-directory")
     print("=" * 60)
     print(f"Live Speech-to-Text with {transcription_backend}")
     print("=" * 60)
