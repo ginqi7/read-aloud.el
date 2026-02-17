@@ -1,6 +1,6 @@
 from deepgram import DeepgramClient
 from transcriber import Transcriber
-from queue import Queue, Empty
+from queue import Queue
 import numpy as np
 import io
 import wave

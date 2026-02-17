@@ -47,6 +47,10 @@
   "Deepgram API key used for authentication when read-alound sends audio for transcription. The value should be a string token provided by your Deepgram account."
   :type 'string)
 
+(defcustom read-alound-paraformer-api-key ""
+  "User-configurable API key used to authenticate requests for the read-aloud Paraformer service."
+  :type 'string)
+
 ;; Commands
 
 (defun read-alound-start ()
@@ -82,7 +86,7 @@
   "If read-alound-notify-command is set, displays the message using a shell command; otherwise prints it."
   (if read-alound-notify-command
       (shell-command-to-string (format read-alound-notify-command msg))
-    (print (format "%s" msg))))
+    (message (format "%s" msg))))
 
 (provide 'read-aloud)
 ;;; read-aloud.el ends here

@@ -88,7 +88,7 @@ async def transcription_loop(sample_rate):
             while not audio_queue.empty():
                 audio_queue.get()  # Discard all old data
 
-            while recording:
+            while recording or not audio_queue.empty():
                 try:
                     audio_chunk = audio_queue.get_nowait()
                     transcriber.send_audio(audio_chunk)
@@ -115,6 +115,7 @@ async def init():
     global transcriber
     transcription_backend = await get_emacs_var("read-alound-transcription-backend")
     deepgram_api_key = await get_emacs_var("read-alound-deepgram-api-key")
+    paraformer_api_key = await get_emacs_var("read-alound-paraformer-api-key")
     vosk_model_directory = await get_emacs_var("read-alound-vosk-model-directory")
     print("=" * 60)
     print(f"Live Speech-to-Text with {transcription_backend}")
@@ -134,6 +135,11 @@ async def init():
         from transcriber_vosk import VoskTranscriber
 
         transcriber = VoskTranscriber(sample_rate, vosk_model_directory)
+
+    elif transcription_backend == "paraformer":
+        from transcriber_paraformer import ParaformerTranscriber
+
+        transcriber = ParaformerTranscriber(sample_rate, paraformer_api_key)
 
     print("Model loaded:")
     print(f"Sample rate: {sample_rate} Hz")
