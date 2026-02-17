@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import threading
-import io
-import wave
 import numpy as np
 import asyncio
 import json
@@ -13,134 +10,31 @@ import sys
 import time
 import sounddevice as sd
 
+from transcriber import Transcriber
 
-MODEL_NAME = "mlx-community/parakeet-tdt-0.6b-v3"
+
 CHUNK_DURATION = 1.0
 SILENCE_DURATION = 0.5
-SILENCE_THRESH = 1e-7  # 音量阈值
+SILENCE_THRESH = 1e-7  # Volume Threshold
 
-transcription_backend = ""
-deepgram_api_key = ""
-vosk_model_directory = ""
-
-transcriber = None
-sample_rate = 0
-
-silent_since = None  # 开始静音的时间戳
+transcriber: Transcriber = None
+silent_since = None  # Timestamp for Start of Mute
 recording = False
 audio_queue = queue.Queue()
-deepgram_audio_queue = queue.Queue()
-last_text = ""
-
-
-def init_parakeet_mlx():
-    import mlx.core as mx
-    from parakeet_mlx import from_pretrained
-
-    global transcriber, sample_rate
-    model = from_pretrained(MODEL_NAME)
-    sample_rate = model.preprocessor_config.sample_rate
-    transcriber = model.transcribe_stream(context_size=(256, 256))
-
-
-def init_vosk():
-    from vosk import Model, KaldiRecognizer
-
-    global transcriber, sample_rate
-    model = Model(vosk_model_directory)
-    sample_rate = 16000
-    transcriber = KaldiRecognizer(model, sample_rate)
-
-
-def init_deepgram():
-    from deepgram import DeepgramClient
-
-    global transcriber, sample_rate
-    transcriber = DeepgramClient(api_key=deepgram_api_key)
-    sample_rate = 16000
-
-
-def init_transcriber():
-    if transcription_backend == "deepgram":
-        init_deepgram()
-    elif transcription_backend == "parakeet-mlx":
-        init_parakeet_mlx()
-    elif transcription_backend == "vosk":
-        init_vosk()
-
-
-def send_audio(audio_chunk):
-    global last_text
-    if transcription_backend == "deepgram":
-        deepgram_audio_queue.put(audio_chunk)
-    elif transcription_backend == "vosk":
-        audio_data = np.concatenate(audio_chunk)
-        audio_int16 = (audio_data * 32767).astype(np.int16)
-        transcriber.AcceptWaveform(audio_int16.tobytes())
-        print(transcriber.PartialResult())
-    elif transcription_backend == "parakeet-mlx":
-        audio_mlx = mx.array(audio_chunk.flatten())
-        transcriber.add_audio(audio_mlx)
-        result = transcriber.result
-        if result.text != last_text:
-            print(f"\rTranscription: {result.text}\n", end="", flush=True)
-            last_text = result.text
 
 
 async def handle_transcription():
+    """Handle transcription by posting a progress message, retrieving the latest transcription result, and if present, sending it to Emacs for display and fuzzy search."""
     await eval_in_emacs("message", ["transcript..."])
-    if transcription_backend == "deepgram":
-        chunks = []
-        while not deepgram_audio_queue.empty():
-            chunks.append(deepgram_audio_queue.get_nowait())
-        if not chunks:
-            return
-        # Concatenate and convert to int16 (WAV standard format)
-        audio_data = np.concatenate(chunks)
-        audio_int16 = (audio_data * 32767).astype(np.int16)
-        # Write to memory in WAV format.
-        buf = io.BytesIO()
-        with wave.open(buf, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)  # int16 = 2 bytes
-            wf.setframerate(sample_rate)
-            wf.writeframes(audio_int16.tobytes())
-
-        response = transcriber.listen.v1.media.transcribe_file(
-            request=buf.getvalue(), model="nova-3"
-        )
-        text = response.results.channels[0].alternatives[0].transcript
-        print(text)
-        await eval_in_emacs("message", [text])
-        await eval_in_emacs("fuzzy-search", [text])
-
-    elif transcription_backend == "parakeet-mlx":
-        result = transcriber.result
-        print(f"\n\nFinal transcription:\n{result.text}\n")
-        if result.sentences:
-            print("Timestamps:")
-            for sentence in result.sentences:
-                await eval_in_emacs("message", [result.text])
-                await eval_in_emacs("fuzzy-search", [result.text])
-                print()
-        if result.text.strip():
-            print(result.text)
-    elif transcription_backend == "vosk":
-        result = json.loads(transcriber.Result())
-        text = result.get("text", "").strip()
-        if text:
-            await eval_in_emacs("message", [text])
-            await eval_in_emacs("fuzzy-search", [text])
-        else:
-            partial = json.loads(transcriber.PartialResult()).get("partial", "").strip()
-            if partial:
-                await eval_in_emacs("message", [partial])
-                await eval_in_emacs("fuzzy-search", [partial])
+    result = transcriber.handle_transcription()
+    if result:
+        await eval_in_emacs("message", [result])
+        await eval_in_emacs("fuzzy-search", [result])
 
 
 async def toggle_recording():
+    """Toggle the recording state, notify Emacs when listening starts or stops, and print the corresponding recording status message."""
     global recording
-
     if not recording:
         recording = True
         await eval_in_emacs("read-alound-notify", ["Listening..."])
@@ -152,6 +46,7 @@ async def toggle_recording():
 
 
 def audio_callback(indata, frames, the_time, status):
+    """Process incoming audio frames during recording, detect sustained silence to stop recording automatically, reset silence timing on non-silent input, and enqueue audio data for later processing."""
     global silent_since, recording
     if status:
         print(f"Audio status: {status}", file=sys.stderr)
@@ -162,19 +57,20 @@ def audio_callback(indata, frames, the_time, status):
                 silent_since = time.time()
             else:
                 if time.time() - silent_since >= SILENCE_DURATION:
-                    # 已持续达到最小静音时间
+                    # Minimum quiet time has been consistently achieved.
                     silent_since = None
-                    print("已检测到持续静音")
+                    print("Continuous silence detected.")
                     if recording:
                         recording = False
         else:
-            # 非静音，重置持续静音计时
+            # Non-silent, reset continuous silence timer.
             silent_since = None
         audio_queue.put(indata.copy())
 
 
 async def transcription_loop(sample_rate):
-    global recording, last_text
+    """Continuously manage the audio input stream, wait for recording to start, clear stale buffered audio, stream live audio chunks to the transcriber while recording, and process transcription after recording stops."""
+    global recording
     chunk_size = int(sample_rate * CHUNK_DURATION)
 
     with sd.InputStream(
@@ -190,14 +86,12 @@ async def transcription_loop(sample_rate):
                 continue
 
             while not audio_queue.empty():
-                audio_queue.get()  # 丢弃所有旧数据
+                audio_queue.get()  # Discard all old data
 
-            last_text = ""
             while recording:
                 try:
                     audio_chunk = audio_queue.get_nowait()
-                    send_audio(audio_chunk)
-                    await eval_in_emacs("message", ["Listening..."])
+                    transcriber.send_audio(audio_chunk)
                 except queue.Empty:
                     await asyncio.sleep(0.01)
                     continue
@@ -206,7 +100,7 @@ async def transcription_loop(sample_rate):
 
 
 async def get_emacs_var(var_name: str):
-    "Get Emacs variable and format it."
+    """Fetch an Emacs variable value by name, normalize quoted string results, log the resolved value, and return None when the value is null."""
     var_value = await bridge.get_emacs_var(var_name)
     if isinstance(var_value, str):
         var_value = var_value.strip('"')
@@ -217,7 +111,8 @@ async def get_emacs_var(var_name: str):
 
 
 async def init():
-    global transcription_backend, sample_rate, deepgram_api_key, vosk_model_directory
+    """Initialize transcription settings from Emacs variables, select and instantiate the configured transcription backend, display startup status information, and launch the asynchronous transcription loop."""
+    global transcriber
     transcription_backend = await get_emacs_var("read-alound-transcription-backend")
     deepgram_api_key = await get_emacs_var("read-alound-deepgram-api-key")
     vosk_model_directory = await get_emacs_var("read-alound-vosk-model-directory")
@@ -226,11 +121,21 @@ async def init():
     print("=" * 60)
     print("\nLoading model...")
 
-    # model = from_pretrained(MODEL_NAME)
-    # sample_rate = model.preprocessor_config.sample_rate
-    init_transcriber()
+    sample_rate = 16000
+    if transcription_backend == "deepgram":
+        from transcriber_deepgram import DeepgramTranscriber
 
-    print(f"Model loaded: {MODEL_NAME}")
+        transcriber = DeepgramTranscriber(sample_rate, deepgram_api_key)
+    elif transcription_backend == "parakeet-mlx":
+        from transcriber_parakeet_mlx import ParakeetMlxTranscriber
+
+        transcriber = ParakeetMlxTranscriber(sample_rate)
+    elif transcription_backend == "vosk":
+        from transcriber_vosk import VoskTranscriber
+
+        transcriber = VoskTranscriber(sample_rate, vosk_model_directory)
+
+    print("Model loaded:")
     print(f"Sample rate: {sample_rate} Hz")
     print("\n" + "=" * 60)
     print("=" * 60 + "\n")
@@ -240,6 +145,7 @@ async def init():
 
 
 def handle_arg_types(arg):
+    """Convert Lisp-style quoted string arguments into symbols when needed and return the argument wrapped as a quoted S-expression."""
     if isinstance(arg, str) and arg.startswith("'"):
         arg = sexpdata.Symbol(arg.partition("'")[2])
 
@@ -247,6 +153,7 @@ def handle_arg_types(arg):
 
 
 async def eval_in_emacs(method_name, args):
+    """Build an Emacs Lisp S-expression from the method name and processed arguments, serialize it, and asynchronously evaluate it in Emacs through the bridge."""
     args = [sexpdata.Symbol(method_name)] + list(map(handle_arg_types, args))  # type: ignore
     sexp = sexpdata.dumps(args)
     # print(sexp)
@@ -254,6 +161,7 @@ async def eval_in_emacs(method_name, args):
 
 
 async def on_message(message):
+    """Parse an incoming message payload, dispatch the toggle command to recording control when requested, report unknown commands, and print a traceback if processing fails."""
     try:
         info = json.loads(message)
         print(info)
@@ -270,6 +178,7 @@ async def on_message(message):
 
 
 async def main():
+    """Register the message handler with the websocket bridge, initialize transcription services, and run initialization and bridge startup concurrently."""
     global bridge
     bridge = websocket_bridge_python.bridge_app_regist(on_message)
     await asyncio.gather(init(), bridge.start())
