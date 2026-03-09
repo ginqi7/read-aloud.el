@@ -66,6 +66,11 @@ def audio_callback(indata, frames, the_time, status):
             # Non-silent, reset continuous silence timer.
             silent_since = None
         audio_queue.put(indata.copy())
+    else:
+        energy = float(np.mean(indata**2))
+        if energy > SILENCE_THRESH:
+            recording = True
+            audio_queue.put(indata.copy())
 
 
 async def transcription_loop(sample_rate):
