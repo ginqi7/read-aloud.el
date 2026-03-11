@@ -1,37 +1,127 @@
-#+title: Hello World
+#+title: Read Aloud
 #+author: Qiqi Jin
 #+language: en
 
-#+HTML: <a href ="https://github.com/ginqi7/elisp-package-template/blob/master/README.zh-CN.org"><img src="https://img.shields.io/badge/README-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-555555.svg"/></a>
+#+HTML: <a href="https://github.com/ginqi7/read-aloud.el/blob/master/README.zh-CN.org"><img src="https://img.shields.io/badge/README-简体中文-555555.svg"/></a>
 
 * Overview
 
-* Prerequisites
-
-** Install
-+ clone the project in your own emacs configuration files directory, like:
-  #+BEGIN_SRC sh
-    git clone https://github.com/ginqi7/elisp-package-template ~/.emacs.d/lisp/read-aloud;
-  #+END_SRC
-
-+ add the path to 'load-path'
-  #+BEGIN_SRC emacs-lisp
-    (add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
-  #+END_SRC
-
-* Configuration
-Here are a few variables that can be used for configuration:
-#+BEGIN_SRC emacs-lisp
-  (require 'read-aloud)
-#+end_src
-
-** Variables
-| variable | default value | explain |
-|----------+---------------+---------|
-|          |               |         |
+Read Aloud is an Emacs package that provides live speech-to-text transcription. It captures microphone audio, detects voice activity automatically (starts on speech, stops on silence), and sends transcribed text to Emacs for fuzzy search integration.
 
 * Features
 
-* Example
+- Voice activity detection: automatically starts recording when you speak and stops after silence
+- Multiple transcription backends:
+  - ~parakeet-mlx~: Local ASR for Apple Silicon (default)
+  - ~deepgram~: Cloud-based Deepgram API
+  - ~vosk~: Local offline using Vosk/Kaldi
+  - ~paraformer~: Alibaba Paraformer real-time API
+- Fuzzy search integration with Emacs buffers
+- Customizable notifications
+
+* Prerequisites
+
+- Emacs 27+
+- Python 3.13+
+- For ~parakeet-mlx~ backend: Apple Silicon Mac
+
+* Installation
+
+** Clone the repository
+
+#+BEGIN_SRC sh
+git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
+#+END_SRC
+
+** Add to load-path
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
+#+END_SRC
+
+** Install Python dependencies
+
+#+BEGIN_SRC sh
+cd ~/.emacs.d/lisp/read-aloud
+pip install -e .
+#+END_SRC
+
+Or use ~uv~:
+
+#+BEGIN_SRC sh
+uv sync
+#+END_SRC
+
+** Install Elisp dependencies
+
+Run the dependency script:
+
+#+BEGIN_SRC sh
+make solve-dependencies
+#+END_SRC
+
+Or manually install:
+- ~websocket~ ([[https://github.com/ahyatt/emacs-websocket][ahyatt/emacs-websocket]])
+- ~websocket-bridge~ ([[https://github.com/ginqi7/websocket-bridge][ginqi7/websocket-bridge]])
+- ~fuzzy-search~ ([[https://github.com/ginqi7/fuzzy-search.el][ginqi7/fuzzy-search.el]])
+
+* Configuration
+
+#+BEGIN_SRC emacs-lisp
+(require 'read-aloud)
+#+END_SRC
+
+** Variables
+
+| Variable                              | Default           | Description                                              |
+|---------------------------------------+-------------------+----------------------------------------------------------|
+| ~read-alound-python~                    | ~python3~           | Python interpreter path                                  |
+| ~read-alound-transcription-backend~     | ~parakeet-mlx~      | Backend: ~parakeet-mlx~, ~deepgram~, ~vosk~, ~paraformer~ |
+| ~read-alound-deepgram-api-key~          | ~""~                | Deepgram API key                                         |
+| ~read-alound-paraformer-api-key~        | ~""~                | Alibaba Paraformer API key                               |
+| ~read-alound-vosk-model-directory~      | ~nil~               | Path to Vosk model directory (for ~vosk~ backend)          |
+| ~read-alound-notify-command~            | ~nil~               | Shell command for notifications                          |
+
+** Example Configuration
+
+#+BEGIN_SRC emacs-lisp
+(use-package read-aloud
+  :load-path "~/.emacs.d/lisp/read-aloud"
+  :config
+  (setq read-alound-python "/opt/homebrew/bin/python3")
+  ;; Use Deepgram for cloud transcription
+  (setq read-alound-transcription-backend "deepgram")
+  (setq read-alound-deepgram-api-key "your-api-key-here")
+  ;; Optional: notify via macOS notification center
+  (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+#+END_SRC
+
+* Usage
+
+| Command                     | Keybinding (optional) | Description                          |
+|-----------------------------+-----------------------+--------------------------------------|
+| ~read-alound-start~           |                       | Start the transcription backend      |
+| ~read-alound-stop~            |                       | Stop the backend                     |
+| ~read-alound-restart~         |                       | Restart and open log buffer          |
+| ~read-alound-toggle~          |                       | Toggle recording state               |
+
+** Workflow
+
+1. Start the service: ~M-x read-alound-start~
+2. Toggle recording: ~M-x read-alound-toggle~ (or bind to a key)
+3. Speak - recording starts automatically when voice is detected
+4. Stop speaking - recording stops after 0.5s of silence
+5. Transcription is sent to fuzzy search automatically
+
+* Development
+
+#+BEGIN_SRC sh
+# Run tests
+make test
+#+END_SRC
+
+* License
+
+GPL-3.0-or-later
 
 * Footnotes

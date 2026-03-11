@@ -1,38 +1,125 @@
-#+title: Hello World
+#+title: Read Aloud
 #+author: Qiqi Jin
 #+language: zh
 
 * 概述
 
-* 前提
+Read Aloud 是一个 Emacs 语音转文字包。它捕获麦克风音频，自动检测语音活动（说话时开始，沉默时停止），并将转录文本发送到 Emacs 进行模糊搜索集成。
 
-** 需要的 Emacs 包
+* 特性
 
-** 安装
-+ 克隆项目到你自己的 Emacs 配置目录下：
+- 语音活动检测：说话时自动开始录音，沉默后自动停止
+- 多种转录后端：
+  - ~parakeet-mlx~：Apple Silicon 本地 ASR（默认）
+  - ~deepgram~：Deepgram 云服务 API
+  - ~vosk~：Vosk/Kaldi 本地离线识别
+  - ~paraformer~：阿里云 Paraformer 实时 API
+- 与 Emacs 缓冲区的模糊搜索集成
+- 可自定义通知
+
+* 前提条件
+
+- Emacs 27+
+- Python 3.13+
+- 对于 ~parakeet-mlx~ 后端：需要 Apple Silicon Mac
+
+* 安装
+
+** 克隆仓库
+
 #+BEGIN_SRC sh
-  git clone https://github.com/ginqi7/elisp-package-template ~/.emacs.d/lisp/read-aloud;
+git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
 #+END_SRC
 
-+ 把克隆的路径添加到 =load-path= 当中
+** 添加到 load-path
+
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
+(add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
 #+END_SRC
+
+** 安装 Python 依赖
+
+#+BEGIN_SRC sh
+cd ~/.emacs.d/lisp/read-aloud
+pip install -e .
+#+END_SRC
+
+或使用 ~uv~：
+
+#+BEGIN_SRC sh
+uv sync
+#+END_SRC
+
+** 安装 Elisp 依赖
+
+运行依赖脚本：
+
+#+BEGIN_SRC sh
+make solve-dependencies
+#+END_SRC
+
+或手动安装：
+- ~websocket~ ([[https://github.com/ahyatt/emacs-websocket][ahyatt/emacs-websocket]])
+- ~websocket-bridge~ ([[https://github.com/ginqi7/websocket-bridge][ginqi7/websocket-bridge]])
+- ~fuzzy-search~ ([[https://github.com/ginqi7/fuzzy-search.el][ginqi7/fuzzy-search.el]])
 
 * 配置
 
 #+BEGIN_SRC emacs-lisp
-  (require 'read-aloud)
-#+end_src
+(require 'read-aloud)
+#+END_SRC
 
 ** 变量
 
-| 变量 | 默认值 | 解释 |
-|------+--------+------|
-|      |        |      |
+| 变量                                    | 默认值            | 说明                                                    |
+|-----------------------------------------+-------------------+---------------------------------------------------------|
+| ~read-alound-python~                      | ~python3~           | Python 解释器路径                                        |
+| ~read-alound-transcription-backend~       | ~parakeet-mlx~      | 后端选择：~parakeet-mlx~, ~deepgram~, ~vosk~, ~paraformer~ |
+| ~read-alound-deepgram-api-key~            | ~""~                | Deepgram API 密钥                                       |
+| ~read-alound-paraformer-api-key~          | ~""~                | 阿里云 Paraformer API 密钥                               |
+| ~read-alound-vosk-model-directory~        | ~nil~               | Vosk 模型目录路径（用于 ~vosk~ 后端）                      |
+| ~read-alound-notify-command~              | ~nil~               | 通知使用的 Shell 命令                                     |
 
-* 特性
+** 配置示例
 
-* 例子
+#+BEGIN_SRC emacs-lisp
+(use-package read-aloud
+  :load-path "~/.emacs.d/lisp/read-aloud"
+  :config
+  (setq read-alound-python "/opt/homebrew/bin/python3")
+  ;; 使用 Deepgram 云转录
+  (setq read-alound-transcription-backend "deepgram")
+  (setq read-alound-deepgram-api-key "your-api-key-here")
+  ;; 可选：使用 macOS 通知中心
+  (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+#+END_SRC
+
+* 使用
+
+| 命令                          | 快捷键（可选） | 说明                                |
+|-------------------------------+----------------|-------------------------------------|
+| ~read-alound-start~             |                | 启动转录后端                        |
+| ~read-alound-stop~              |                | 停止后端                            |
+| ~read-alound-restart~           |                | 重启并打开日志缓冲区                |
+| ~read-alound-toggle~            |                | 切换录音状态                        |
+
+** 使用流程
+
+1. 启动服务：~M-x read-alound-start~
+2. 切换录音：~M-x read-alound-toggle~（或绑定到快捷键）
+3. 说话 - 检测到语音时自动开始录音
+4. 停止说话 - 沉默 0.5 秒后自动停止录音
+5. 转录文本自动发送到模糊搜索
+
+* 开发
+
+#+BEGIN_SRC sh
+# 运行测试
+make test
+#+END_SRC
+
+* 许可证
+
+GPL-3.0-or-later
 
 * Footnotes
