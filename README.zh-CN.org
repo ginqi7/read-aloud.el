@@ -13,7 +13,7 @@ Read Aloud 是一个 Emacs 语音转文字包。它捕获麦克风音频，自�
   - ~parakeet-mlx~：Apple Silicon 本地 ASR（默认）
   - ~deepgram~：Deepgram 云服务 API
   - ~vosk~：Vosk/Kaldi 本地离线识别
-  - ~paraformer~：阿里云 Paraformer 实时 API
+  - ~aliyun~：阿里云 Paraformer 实时 API
 - 与 Emacs 缓冲区的模糊搜索集成
 - 可自定义通知
 
@@ -28,26 +28,26 @@ Read Aloud 是一个 Emacs 语音转文字包。它捕获麦克风音频，自�
 ** 克隆仓库
 
 #+BEGIN_SRC sh
-git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
+  git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
 #+END_SRC
 
 ** 添加到 load-path
 
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
+  (add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
 #+END_SRC
 
 ** 安装 Python 依赖
 
 #+BEGIN_SRC sh
-cd ~/.emacs.d/lisp/read-aloud
-pip install -e .
+  cd ~/.emacs.d/lisp/read-aloud
+  pip install -e .
 #+END_SRC
 
 或使用 ~uv~：
 
 #+BEGIN_SRC sh
-uv sync
+  uv sync
 #+END_SRC
 
 ** 安装 Elisp 依赖
@@ -55,7 +55,7 @@ uv sync
 运行依赖脚本：
 
 #+BEGIN_SRC sh
-make solve-dependencies
+  make solve-dependencies
 #+END_SRC
 
 或手动安装：
@@ -66,7 +66,7 @@ make solve-dependencies
 * 配置
 
 #+BEGIN_SRC emacs-lisp
-(require 'read-aloud)
+  (require 'read-aloud)
 #+END_SRC
 
 ** 变量
@@ -74,24 +74,24 @@ make solve-dependencies
 | 变量                                    | 默认值            | 说明                                                    |
 |-----------------------------------------+-------------------+---------------------------------------------------------|
 | ~read-alound-python~                      | ~python3~           | Python 解释器路径                                        |
-| ~read-alound-transcription-backend~       | ~parakeet-mlx~      | 后端选择：~parakeet-mlx~, ~deepgram~, ~vosk~, ~paraformer~ |
+| ~read-alound-transcription-backend~       | ~parakeet-mlx~      | 后端选择：~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
 | ~read-alound-deepgram-api-key~            | ~""~                | Deepgram API 密钥                                       |
-| ~read-alound-paraformer-api-key~          | ~""~                | 阿里云 Paraformer API 密钥                               |
+| ~read-alound-aliyun-api-key~          | ~""~                | 阿里云 Paraformer API 密钥                               |
 | ~read-alound-vosk-model-directory~        | ~nil~               | Vosk 模型目录路径（用于 ~vosk~ 后端）                      |
 | ~read-alound-notify-command~              | ~nil~               | 通知使用的 Shell 命令                                     |
 
 ** 配置示例
 
 #+BEGIN_SRC emacs-lisp
-(use-package read-aloud
-  :load-path "~/.emacs.d/lisp/read-aloud"
-  :config
-  (setq read-alound-python "/opt/homebrew/bin/python3")
-  ;; 使用 Deepgram 云转录
-  (setq read-alound-transcription-backend "deepgram")
-  (setq read-alound-deepgram-api-key "your-api-key-here")
-  ;; 可选：使用 macOS 通知中心
-  (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+  (use-package read-aloud
+    :load-path "~/.emacs.d/lisp/read-aloud"
+    :config
+    (setq read-alound-python "/opt/homebrew/bin/python3")
+    ;; 使用 Deepgram 云转录
+    (setq read-alound-transcription-backend "deepgram")
+    (setq read-alound-deepgram-api-key "your-api-key-here")
+    ;; 可选：使用 macOS 通知中心
+    (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
 #+END_SRC
 
 * 使用
@@ -114,8 +114,8 @@ make solve-dependencies
 * 开发
 
 #+BEGIN_SRC sh
-# 运行测试
-make test
+  # 运行测试
+  make test
 #+END_SRC
 
 * 许可证

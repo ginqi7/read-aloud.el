@@ -15,7 +15,7 @@ Read Aloud is an Emacs package that provides live speech-to-text transcription. 
   - ~parakeet-mlx~: Local ASR for Apple Silicon (default)
   - ~deepgram~: Cloud-based Deepgram API
   - ~vosk~: Local offline using Vosk/Kaldi
-  - ~paraformer~: Alibaba Paraformer real-time API
+  - ~aliyun~: Alibaba Paraformer real-time API
 - Fuzzy search integration with Emacs buffers
 - Customizable notifications
 
@@ -30,26 +30,26 @@ Read Aloud is an Emacs package that provides live speech-to-text transcription. 
 ** Clone the repository
 
 #+BEGIN_SRC sh
-git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
+  git clone https://github.com/ginqi7/read-aloud.el ~/.emacs.d/lisp/read-aloud
 #+END_SRC
 
 ** Add to load-path
 
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
+  (add-to-list 'load-path "~/.emacs.d/lisp/read-aloud")
 #+END_SRC
 
 ** Install Python dependencies
 
 #+BEGIN_SRC sh
-cd ~/.emacs.d/lisp/read-aloud
-pip install -e .
+  cd ~/.emacs.d/lisp/read-aloud
+  pip install -e .
 #+END_SRC
 
 Or use ~uv~:
 
 #+BEGIN_SRC sh
-uv sync
+  uv sync
 #+END_SRC
 
 ** Install Elisp dependencies
@@ -57,7 +57,7 @@ uv sync
 Run the dependency script:
 
 #+BEGIN_SRC sh
-make solve-dependencies
+  make solve-dependencies
 #+END_SRC
 
 Or manually install:
@@ -68,7 +68,7 @@ Or manually install:
 * Configuration
 
 #+BEGIN_SRC emacs-lisp
-(require 'read-aloud)
+  (require 'read-aloud)
 #+END_SRC
 
 ** Variables
@@ -76,24 +76,24 @@ Or manually install:
 | Variable                              | Default           | Description                                              |
 |---------------------------------------+-------------------+----------------------------------------------------------|
 | ~read-alound-python~                    | ~python3~           | Python interpreter path                                  |
-| ~read-alound-transcription-backend~     | ~parakeet-mlx~      | Backend: ~parakeet-mlx~, ~deepgram~, ~vosk~, ~paraformer~ |
+| ~read-alound-transcription-backend~     | ~parakeet-mlx~      | Backend: ~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
 | ~read-alound-deepgram-api-key~          | ~""~                | Deepgram API key                                         |
-| ~read-alound-paraformer-api-key~        | ~""~                | Alibaba Paraformer API key                               |
+| ~read-alound-aliyun-api-key~        | ~""~                | Alibaba Paraformer API key                               |
 | ~read-alound-vosk-model-directory~      | ~nil~               | Path to Vosk model directory (for ~vosk~ backend)          |
 | ~read-alound-notify-command~            | ~nil~               | Shell command for notifications                          |
 
 ** Example Configuration
 
 #+BEGIN_SRC emacs-lisp
-(use-package read-aloud
-  :load-path "~/.emacs.d/lisp/read-aloud"
-  :config
-  (setq read-alound-python "/opt/homebrew/bin/python3")
-  ;; Use Deepgram for cloud transcription
-  (setq read-alound-transcription-backend "deepgram")
-  (setq read-alound-deepgram-api-key "your-api-key-here")
-  ;; Optional: notify via macOS notification center
-  (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+  (use-package read-aloud
+    :load-path "~/.emacs.d/lisp/read-aloud"
+    :config
+    (setq read-alound-python "/opt/homebrew/bin/python3")
+    ;; Use Deepgram for cloud transcription
+    (setq read-alound-transcription-backend "deepgram")
+    (setq read-alound-deepgram-api-key "your-api-key-here")
+    ;; Optional: notify via macOS notification center
+    (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
 #+END_SRC
 
 * Usage
@@ -116,8 +116,8 @@ Or manually install:
 * Development
 
 #+BEGIN_SRC sh
-# Run tests
-make test
+  # Run tests
+  make test
 #+END_SRC
 
 * License

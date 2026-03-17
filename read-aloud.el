@@ -47,8 +47,12 @@
   "Deepgram API key used for authentication when read-alound sends audio for transcription. The value should be a string token provided by your Deepgram account."
   :type 'string)
 
-(defcustom read-alound-paraformer-api-key ""
+(defcustom read-alound-aliyun-api-key ""
   "User-configurable API key used to authenticate requests for the read-aloud Paraformer service."
+  :type 'string)
+
+(defcustom read-alound-aliyun-model "paraformer-realtime-v2"
+  "Model name for Alibaba Paraformer transcription backend."
   :type 'string)
 
 ;; Commands

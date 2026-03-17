@@ -120,7 +120,8 @@ async def init():
     global transcriber
     transcription_backend = await get_emacs_var("read-alound-transcription-backend")
     deepgram_api_key = await get_emacs_var("read-alound-deepgram-api-key")
-    paraformer_api_key = await get_emacs_var("read-alound-paraformer-api-key")
+    aliyun_api_key = await get_emacs_var("read-alound-aliyun-api-key")
+    aliyun_model = await get_emacs_var("read-alound-aliyun-model")
     vosk_model_directory = await get_emacs_var("read-alound-vosk-model-directory")
     print("=" * 60)
     print(f"Live Speech-to-Text with {transcription_backend}")
@@ -141,10 +142,10 @@ async def init():
 
         transcriber = VoskTranscriber(sample_rate, vosk_model_directory)
 
-    elif transcription_backend == "paraformer":
-        from transcriber_paraformer import ParaformerTranscriber
+    elif transcription_backend == "aliyun":
+        from transcriber_aliyun import AliyunTranscriber
 
-        transcriber = ParaformerTranscriber(sample_rate, paraformer_api_key)
+        transcriber = AliyunTranscriber(sample_rate, aliyun_api_key, aliyun_model)
 
     print("Model loaded:")
     print(f"Sample rate: {sample_rate} Hz")
