@@ -6,9 +6,9 @@ from transcriber import Transcriber
 class ParakeetMlxTranscriber(Transcriber):
     def __init__(self, sample_rate: int):
         super().__init__(sample_rate)
-        model = from_pretrained("mlx-community/parakeet-tdt-0.6b-v3")
-        self.sample_rate = model.preprocessor_config.sample_rate
-        self.client = model.transcribe_stream(context_size=(256, 256))
+        self.model = from_pretrained("mlx-community/parakeet-tdt-0.6b-v3")
+        self.sample_rate = self.model.preprocessor_config.sample_rate
+        self.client = self.model.transcribe_stream(context_size=(256, 256))
         self.last_text = ""
 
     def send_audio(self, audio_chunk: bytes) -> None:
@@ -23,4 +23,10 @@ class ParakeetMlxTranscriber(Transcriber):
         result = self.client.result
         if result.text.strip():
             print(result.text)
+            self.reset_session()
             return result.text
+
+    def reset_session(self) -> None:
+        """清除上一段识别上下文与结果"""
+        self.client = self.model.transcribe_stream(context_size=(256, 256))
+        self.last_text = ""
