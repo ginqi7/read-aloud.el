@@ -11,7 +11,7 @@ class Transcriber(ABC):
         self.sample_rate = sample_rate
 
     @abstractmethod
-    def send_audio(self, audio_chunk) -> None:
+    def send_audio(self, audio_chunk) -> Any:
         """Receive one chunk of audio data."""
         raise NotImplementedError
 

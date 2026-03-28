@@ -29,7 +29,10 @@ async def handle_transcription():
     result = transcriber.handle_transcription()
     if result:
         await eval_in_emacs("message", [result])
-        await eval_in_emacs("fuzzy-search", [result])
+        await eval_in_emacs(
+            "fuzzy-search",
+            [result, 0.5, True],
+        )
 
 
 async def toggle_recording():
@@ -96,7 +99,9 @@ async def transcription_loop(sample_rate):
             while recording or not audio_queue.empty():
                 try:
                     audio_chunk = audio_queue.get_nowait()
-                    transcriber.send_audio(audio_chunk)
+                    result = transcriber.send_audio(audio_chunk)
+                    if result:
+                        await eval_in_emacs("fuzzy-search", [result])
                 except queue.Empty:
                     await asyncio.sleep(0.01)
                     continue
