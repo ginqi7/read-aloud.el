@@ -75,12 +75,12 @@ Or manually install:
 
 | Variable                              | Default           | Description                                              |
 |---------------------------------------+-------------------+----------------------------------------------------------|
-| ~read-alound-python~                    | ~python3~           | Python interpreter path                                  |
-| ~read-alound-transcription-backend~     | ~parakeet-mlx~      | Backend: ~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
-| ~read-alound-deepgram-api-key~          | ~""~                | Deepgram API key                                         |
-| ~read-alound-aliyun-api-key~        | ~""~                | Alibaba Paraformer API key                               |
-| ~read-alound-vosk-model-directory~      | ~nil~               | Path to Vosk model directory (for ~vosk~ backend)          |
-| ~read-alound-notify-command~            | ~nil~               | Shell command for notifications                          |
+| ~read-aloud-python~                    | ~python3~           | Python interpreter path                                  |
+| ~read-aloud-transcription-backend~     | ~parakeet-mlx~      | Backend: ~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
+| ~read-aloud-deepgram-api-key~          | ~""~                | Deepgram API key                                         |
+| ~read-aloud-aliyun-api-key~        | ~""~                | Alibaba Paraformer API key                               |
+| ~read-aloud-vosk-model-directory~      | ~nil~               | Path to Vosk model directory (for ~vosk~ backend)          |
+| ~read-aloud-notify-command~            | ~nil~               | Shell command for notifications                          |
 
 ** Example Configuration
 
@@ -88,27 +88,27 @@ Or manually install:
   (use-package read-aloud
     :load-path "~/.emacs.d/lisp/read-aloud"
     :config
-    (setq read-alound-python "/opt/homebrew/bin/python3")
+    (setq read-aloud-python "/opt/homebrew/bin/python3")
     ;; Use Deepgram for cloud transcription
-    (setq read-alound-transcription-backend "deepgram")
-    (setq read-alound-deepgram-api-key "your-api-key-here")
+    (setq read-aloud-transcription-backend "deepgram")
+    (setq read-aloud-deepgram-api-key "your-api-key-here")
     ;; Optional: notify via macOS notification center
-    (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+    (setq read-aloud-notify-command "osascript -e 'display notification \"%s\"'"))
 #+END_SRC
 
 * Usage
 
 | Command                     | Keybinding (optional) | Description                          |
 |-----------------------------+-----------------------+--------------------------------------|
-| ~read-alound-start~           |                       | Start the transcription backend      |
-| ~read-alound-stop~            |                       | Stop the backend                     |
-| ~read-alound-restart~         |                       | Restart and open log buffer          |
-| ~read-alound-toggle~          |                       | Toggle recording state               |
+| ~read-aloud-start~           |                       | Start the transcription backend      |
+| ~read-aloud-stop~            |                       | Stop the backend                     |
+| ~read-aloud-restart~         |                       | Restart and open log buffer          |
+| ~read-aloud-toggle~          |                       | Toggle recording state               |
 
 ** Workflow
 
-1. Start the service: ~M-x read-alound-start~
-2. Toggle recording: ~M-x read-alound-toggle~ (or bind to a key)
+1. Start the service: ~M-x read-aloud-start~
+2. Toggle recording: ~M-x read-aloud-toggle~ (or bind to a key)
 3. Speak - recording starts automatically when voice is detected
 4. Stop speaking - recording stops after 0.5s of silence
 5. Transcription is sent to fuzzy search automatically

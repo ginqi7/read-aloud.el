@@ -73,12 +73,12 @@ Read Aloud 是一个 Emacs 语音转文字包。它捕获麦克风音频，自�
 
 | 变量                                    | 默认值            | 说明                                                    |
 |-----------------------------------------+-------------------+---------------------------------------------------------|
-| ~read-alound-python~                      | ~python3~           | Python 解释器路径                                        |
-| ~read-alound-transcription-backend~       | ~parakeet-mlx~      | 后端选择：~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
-| ~read-alound-deepgram-api-key~            | ~""~                | Deepgram API 密钥                                       |
-| ~read-alound-aliyun-api-key~          | ~""~                | 阿里云 Paraformer API 密钥                               |
-| ~read-alound-vosk-model-directory~        | ~nil~               | Vosk 模型目录路径（用于 ~vosk~ 后端）                      |
-| ~read-alound-notify-command~              | ~nil~               | 通知使用的 Shell 命令                                     |
+| ~read-aloud-python~                      | ~python3~           | Python 解释器路径                                        |
+| ~read-aloud-transcription-backend~       | ~parakeet-mlx~      | 后端选择：~parakeet-mlx~, ~deepgram~, ~vosk~, ~aliyun~ |
+| ~read-aloud-deepgram-api-key~            | ~""~                | Deepgram API 密钥                                       |
+| ~read-aloud-aliyun-api-key~          | ~""~                | 阿里云 Paraformer API 密钥                               |
+| ~read-aloud-vosk-model-directory~        | ~nil~               | Vosk 模型目录路径（用于 ~vosk~ 后端）                      |
+| ~read-aloud-notify-command~              | ~nil~               | 通知使用的 Shell 命令                                     |
 
 ** 配置示例
 
@@ -86,27 +86,27 @@ Read Aloud 是一个 Emacs 语音转文字包。它捕获麦克风音频，自�
   (use-package read-aloud
     :load-path "~/.emacs.d/lisp/read-aloud"
     :config
-    (setq read-alound-python "/opt/homebrew/bin/python3")
+    (setq read-aloud-python "/opt/homebrew/bin/python3")
     ;; 使用 Deepgram 云转录
-    (setq read-alound-transcription-backend "deepgram")
-    (setq read-alound-deepgram-api-key "your-api-key-here")
+    (setq read-aloud-transcription-backend "deepgram")
+    (setq read-aloud-deepgram-api-key "your-api-key-here")
     ;; 可选：使用 macOS 通知中心
-    (setq read-alound-notify-command "osascript -e 'display notification \"%s\"'"))
+    (setq read-aloud-notify-command "osascript -e 'display notification \"%s\"'"))
 #+END_SRC
 
 * 使用
 
 | 命令                          | 快捷键（可选） | 说明                                |
 |-------------------------------+----------------|-------------------------------------|
-| ~read-alound-start~             |                | 启动转录后端                        |
-| ~read-alound-stop~              |                | 停止后端                            |
-| ~read-alound-restart~           |                | 重启并打开日志缓冲区                |
-| ~read-alound-toggle~            |                | 切换录音状态                        |
+| ~read-aloud-start~             |                | 启动转录后端                        |
+| ~read-aloud-stop~              |                | 停止后端                            |
+| ~read-aloud-restart~           |                | 重启并打开日志缓冲区                |
+| ~read-aloud-toggle~            |                | 切换录音状态                        |
 
 ** 使用流程
 
-1. 启动服务：~M-x read-alound-start~
-2. 切换录音：~M-x read-alound-toggle~（或绑定到快捷键）
+1. 启动服务：~M-x read-aloud-start~
+2. 切换录音：~M-x read-aloud-toggle~（或绑定到快捷键）
 3. 说话 - 检测到语音时自动开始录音
 4. 停止说话 - 沉默 0.5 秒后自动停止录音
 5. 转录文本自动发送到模糊搜索

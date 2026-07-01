@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 ┌─────────────────┐     WebSocket     ┌─────────────────┐
-│  read-aloud.el  │ ◄──────────────► │ read-alound.py  │
+│  read-aloud.el  │ ◄──────────────► │ read-aloud.py  │
 │   (Elisp)       │                   │    (Python)     │
 └─────────────────┘                   └────────┬────────┘
                                                │
@@ -30,16 +30,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Elisp Frontend (`read-aloud.el`)
 
 - Communicates with Python backend via `websocket-bridge`
-- Key commands: `read-alound-start`, `read-alound-stop`, `read-alound-restart`, `read-alound-toggle`
+- Key commands: `read-aloud-start`, `read-aloud-stop`, `read-aloud-restart`, `read-aloud-toggle`
 - Configuration variables:
-  - `read-alound-transcription-backend` - One of: `"parakeet-mlx"`, `"deepgram"`, `"vosk"`, `"aliyun"`
-  - `read-alound-deepgram-api-key` - Deepgram API key
-  - `read-alound-aliyun-api-key` - Alibaba Paraformer API key
-  - `read-alound-aliyun-model` - Model identifier for Paraformer
-  - `read-alound-vosk-model-directory` - Path to Vosk model directory
-  - `read-alound-notify-command` - Optional shell command for notifications
+  - `read-aloud-transcription-backend` - One of: `"parakeet-mlx"`, `"deepgram"`, `"vosk"`, `"aliyun"`
+  - `read-aloud-deepgram-api-key` - Deepgram API key
+  - `read-aloud-aliyun-api-key` - Alibaba Paraformer API key
+  - `read-aloud-aliyun-model` - Model identifier for Paraformer
+  - `read-aloud-vosk-model-directory` - Path to Vosk model directory
+  - `read-aloud-notify-command` - Optional shell command for notifications
 
-### Python Backend (`read-alound.py`)
+### Python Backend (`read-aloud.py`)
 
 - Audio capture via `sounddevice` with callback-based streaming
 - Voice Activity Detection (VAD):
@@ -52,12 +52,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 All backends implement `transcriber.Transcriber` abstract base class:
 
-| Backend | File | Platform | Notes |
-|---------|------|----------|-------|
-| `parakeet-mlx` | `transcriber_parakeet_mlx.py` | Apple Silicon | Default; uses MLX streaming ASR |
-| `deepgram` | `transcriber_deepgram.py` | Cross-platform | Cloud API; uses `nova-3` model |
-| `vosk` | `transcriber_vosk.py` | Cross-platform | Offline; requires model directory |
-| `aliyun` | `transcriber_aliyun.py` | Cross-platform | Alibaba Paraformer; needs API key |
+| Backend        | File                          | Platform       | Notes                             |
+| -------------- | ----------------------------- | -------------- | --------------------------------- |
+| `parakeet-mlx` | `transcriber_parakeet_mlx.py` | Apple Silicon  | Default; uses MLX streaming ASR   |
+| `deepgram`     | `transcriber_deepgram.py`     | Cross-platform | Cloud API; uses `nova-3` model    |
+| `vosk`         | `transcriber_vosk.py`         | Cross-platform | Offline; requires model directory |
+| `aliyun`       | `transcriber_aliyun.py`       | Cross-platform | Alibaba Paraformer; needs API key |
 
 ## Commands
 
@@ -78,6 +78,7 @@ uv sync
 ## Dependencies
 
 ### Elisp (`dependencies.txt`)
+
 - `websocket` - WebSocket client
 - `websocket-bridge` - Emacs-Python IPC
 - `fuzzy-search` - Fuzzy search integration
@@ -85,6 +86,7 @@ uv sync
 Installed to `~/.emacs.d/lisp/` via `dependencies.sh`
 
 ### Python (`pyproject.toml`)
+
 - `parakeet-mlx>=0.5.0` - Apple Silicon streaming ASR
 - `sounddevice>=0.5.5` - Audio I/O
 - `websocket-bridge-python>=0.0.2` - Python IPC bridge
@@ -96,5 +98,5 @@ Python 3.13+ required.
 
 - `.venv/` contains local virtual environment (not committed)
 - Default backend `parakeet-mlx` requires Apple Silicon Mac
-- For cloud/offline backends, configure `read-alound-transcription-backend` and set API keys/model paths
+- For cloud/offline backends, configure `read-aloud-transcription-backend` and set API keys/model paths
 - Backend name in config: use `"aliyun"` (not `"paraformer"`) for Alibaba Paraformer

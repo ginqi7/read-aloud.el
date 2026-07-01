@@ -26,70 +26,70 @@
 (require 'websocket-bridge)
 (require 'fuzzy-search)
 
-(defvar read-alound-py-path
-  (concat (file-name-directory (or load-file-name (buffer-file-name))) "read-alound.py")
-  "Stores the path to the read-alound.py file by concatenating the directory of the current file with \"read-alound.py\".")
+(defvar read-aloud-py-path
+  (concat (file-name-directory (or load-file-name (buffer-file-name))) "read-aloud.py")
+  "Stores the path to the read-aloud.py file by concatenating the directory of the current file with \"read-aloud.py\".")
 
 ;; Custom variables
-(defcustom read-alound-python (executable-find "python3")
+(defcustom read-aloud-python (executable-find "python3")
   "The Python interpreter."
   :type 'string)
 
-(defcustom read-alound-notify-command nil
-  "Specifies the command for read-alound notifications, stored as a string."
+(defcustom read-aloud-notify-command nil
+  "Specifies the command for read-aloud notifications, stored as a string."
   :type 'string)
 
-(defcustom read-alound-transcription-backend "parakeet-mlx"
-  "Name of the transcription backend model used by read-alound. The value should be a string identifying the backend to use (for example, \"parakeet-mlx\", \"deepgram\")."
+(defcustom read-aloud-transcription-backend "parakeet-mlx"
+  "Name of the transcription backend model used by read-aloud. The value should be a string identifying the backend to use (for example, \"parakeet-mlx\", \"deepgram\")."
   :type 'string)
 
-(defcustom read-alound-deepgram-api-key ""
-  "Deepgram API key used for authentication when read-alound sends audio for transcription. The value should be a string token provided by your Deepgram account."
+(defcustom read-aloud-deepgram-api-key ""
+  "Deepgram API key used for authentication when read-aloud sends audio for transcription. The value should be a string token provided by your Deepgram account."
   :type 'string)
 
-(defcustom read-alound-aliyun-api-key ""
+(defcustom read-aloud-aliyun-api-key ""
   "User-configurable API key used to authenticate requests for the read-aloud Paraformer service."
   :type 'string)
 
-(defcustom read-alound-aliyun-model "paraformer-realtime-v2"
+(defcustom read-aloud-aliyun-model "paraformer-realtime-v2"
   "Model name for Alibaba Paraformer transcription backend."
   :type 'string)
 
 ;; Commands
 
-(defun read-alound-start ()
-  "Start read-alound."
+(defun read-aloud-start ()
+  "Start read-aloud."
   (interactive)
   (websocket-bridge-server-start)
   (websocket-bridge-app-start
-   "read-alound"
-   read-alound-python
-   read-alound-py-path))
+   "read-aloud"
+   read-aloud-python
+   read-aloud-py-path))
 
-(defun read-alound-stop ()
-  "Stop read-alound."
+(defun read-aloud-stop ()
+  "Stop read-aloud."
   (interactive)
-  (websocket-bridge-app-exit "read-alound"))
+  (websocket-bridge-app-exit "read-aloud"))
 
-(defun read-alound-restart ()
-  "Restart read-alound."
+(defun read-aloud-restart ()
+  "Restart read-aloud."
   (interactive)
-  (read-alound-stop)
-  (read-alound-start)
+  (read-aloud-stop)
+  (read-aloud-start)
   (split-window-below -10)
   (other-window 1)
-  (websocket-bridge-app-open-buffer "read-alound"))
+  (websocket-bridge-app-open-buffer "read-aloud"))
 
-(defun read-alound-toggle ()
-  "Toggles the read-alound functionality by clearing highlights and sending a \"toggle\" command to \"read-alound\"."
+(defun read-aloud-toggle ()
+  "Toggles the read-aloud functionality by clearing highlights and sending a \"toggle\" command to \"read-aloud\"."
   (interactive)
   (fuzzy-search--clear-highlights)
-  (websocket-bridge-call "read-alound" "toggle"))
+  (websocket-bridge-call "read-aloud" "toggle"))
 
-(defun read-alound-notify (msg)
-  "If read-alound-notify-command is set, displays the message using a shell command; otherwise prints it."
-  (if read-alound-notify-command
-      (shell-command-to-string (format read-alound-notify-command msg))
+(defun read-aloud-notify (msg)
+  "If read-aloud-notify-command is set, displays the message using a shell command; otherwise prints it."
+  (if read-aloud-notify-command
+      (shell-command-to-string (format read-aloud-notify-command msg))
     (message (format "%s" msg))))
 
 (provide 'read-aloud)

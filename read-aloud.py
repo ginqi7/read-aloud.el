@@ -40,11 +40,11 @@ async def toggle_recording():
     global recording
     if not recording:
         recording = True
-        await eval_in_emacs("read-alound-notify", ["Listening..."])
+        await eval_in_emacs("read-aloud-notify", ["Listening..."])
         print("\nRecording started \n")
     else:
         recording = False
-        await eval_in_emacs("read-alound-notify", ["Stopped..."])
+        await eval_in_emacs("read-aloud-notify", ["Stopped..."])
         print("\nRecording stopped. Processing transcription...\n")
 
 
@@ -123,11 +123,11 @@ async def get_emacs_var(var_name: str):
 async def init():
     """Initialize transcription settings from Emacs variables, select and instantiate the configured transcription backend, display startup status information, and launch the asynchronous transcription loop."""
     global transcriber
-    transcription_backend = await get_emacs_var("read-alound-transcription-backend")
-    deepgram_api_key = await get_emacs_var("read-alound-deepgram-api-key")
-    aliyun_api_key = await get_emacs_var("read-alound-aliyun-api-key")
-    aliyun_model = await get_emacs_var("read-alound-aliyun-model")
-    vosk_model_directory = await get_emacs_var("read-alound-vosk-model-directory")
+    transcription_backend = await get_emacs_var("read-aloud-transcription-backend")
+    deepgram_api_key = await get_emacs_var("read-aloud-deepgram-api-key")
+    aliyun_api_key = await get_emacs_var("read-aloud-aliyun-api-key")
+    aliyun_model = await get_emacs_var("read-aloud-aliyun-model")
+    vosk_model_directory = await get_emacs_var("read-aloud-vosk-model-directory")
     print("=" * 60)
     print(f"Live Speech-to-Text with {transcription_backend}")
     print("=" * 60)
@@ -151,6 +151,10 @@ async def init():
         from transcriber_aliyun import AliyunTranscriber
 
         transcriber = AliyunTranscriber(sample_rate, aliyun_api_key, aliyun_model)
+    elif transcription_backend == "apple":
+        from transcriber_apple import AppleTranscriber
+
+        transcriber = AppleTranscriber(sample_rate)
 
     print("Model loaded:")
     print(f"Sample rate: {sample_rate} Hz")
